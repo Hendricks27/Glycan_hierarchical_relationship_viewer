@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="new_design.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        .buttons{
+            background-color: #19a6af; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+    </style>
+    <title>Demo</title>
+</head>
+<body>
+<h1>This is a demonstration of glycan relationship viewer</h1>
+<div id="luck">
+    <input type="button" onclick="randomChoose5()" value="I am feeling lucky:" class="buttons">
+    <div id="random5"></div><br>
+
+</div>
+<div id="parentDIV">
+    <div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 800px; height: 600px; right: 0;"></div>
+</div>
+<script>
+
+    //Dropdown menu for choose
+    var content,totalNum = 0;
+    var accs;
+
+    d3.json("comp.json",function(data){
+        content = data;
+        for (var i in data){
+            totalNum++;
+        }
+        accs = Object.keys(content);
+
+        randomChoose5();
+
+    });
+
+
+    function randomChoose5(){
+        var root = document.getElementById("random5");
+        while (root.firstChild){
+            root.removeChild(root.firstChild);
+        }
+        for (var i in [1,2,3,4,5]){
+            var acc = accs[ran()];
+            var button = document.createElement("input");
+            button.type = "button";
+            button.id = acc;
+            button.value = acc;
+            button.setAttribute("class","buttons");
+            button.onclick = function(){
+                refresh(this.value);
+            };
+
+            root.appendChild(button);
+        }
+
+    }
+
+    function ran(){
+        return Math.floor(Math.random() * totalNum)
+    }
+
+    function refresh(acc){
+        demo_option.content.composition = acc;
+        glycanviewer.init(demo_option);
+    }
+
+    // A demo of how to use my API
+    var demo_option = {
+        content : {
+            div_id : "uniqueID",
+            composition : "G01924ZE",
+            topoonly : 0,
+            view_root : "",
+            json_url : "comp.json",
+            img_url : "img/"
+        },
+        display : {
+            enable_title : true
+        },
+        navi : {
+            enable : true,
+            size : 0.2, // navi window size percentage compared to the whole graph. Recommend 0.1 to 0.2 (Can be omitted, default set to 0.15)
+            position : 4 // 1,2,3,4 : top left, top right, bottom left, bottom right.(Can be omitted. default set to 4)
+        }
+    };
+
+    glycanviewer.init(demo_option);
+</script>
+<p>Pretend this is the caption</p>
+</body>
+</html>

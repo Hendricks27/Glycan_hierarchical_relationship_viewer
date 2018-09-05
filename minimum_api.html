@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<head>
+    <script src="new_design.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 800px; height: 600px; right: 0;"></div>
+
+<script>
+
+    var demo_option = {
+        content : {
+            div_id : "uniqueID",
+            composition : "G01924ZE",
+            topoonly : 0,
+            view_root : "",
+            json_url : "comp.json",
+            img_url : "img/"
+        },
+        display : {
+            enable_title : true
+        },
+        navi : {
+            enable : true
+        }
+    };
+
+    glycanviewer.init(demo_option);
+</script>
+</body>
+</html>
