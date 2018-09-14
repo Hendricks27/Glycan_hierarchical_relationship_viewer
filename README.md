@@ -1,6 +1,6 @@
 # Glycan_hierarchical_relationship_viewer
 The JavaScript widget is used to visualize the relationship among them
-<br><a href="index.html">The tutorial</a><br>
+<br><a href="https://hendricks27.github.io/Glycan_hierarchical_relationship_viewer/index.html">The tutorial</a><br>
 
 Update History:
 
