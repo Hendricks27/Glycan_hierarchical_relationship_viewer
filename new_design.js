@@ -84,9 +84,12 @@ var glycanviewer = {
         this.div_navi = document.createElement("div");
         this.div_navi.setAttribute("id",id+"navi");
         //this.div_navi.style = "position: absolute; left: 0; top: 0; float: right; width: 100%; height: 100%";
+        this.div_contextMenu = document.createElement("div");
+        this.div_contextMenu.setAttribute("id",id+"contextMenu");
 
         this.div_realStuff.appendChild(this.div_network);
         this.div_realStuff.appendChild(this.div_navi);
+        this.div_realStuff.appendChild(this.div_contextMenu);
 
         this.div_root.appendChild(this.div_header);
         this.div_root.appendChild(this.div_realStuff);
@@ -149,7 +152,6 @@ var glycanviewer = {
         }
 
 
-
         this.network = new vis.Network(thisLib.div_network);
 
         var displaynodes = {};
@@ -182,7 +184,6 @@ var glycanviewer = {
         }
         this.rootlevel = rootlevel;
         this.displaynodes = displaynodes;
-
 
 
         // Calculate the nodeSpace and height scale ratio
@@ -283,16 +284,15 @@ var glycanviewer = {
             d.shape = 'image';
             //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
             //d.image = thisLib.para.content.img_url+d.name+'.png';
-
             d.image = thisLib.nodeImg[d.name];
 
             d.size = d.height / thisLib.magicNumberForHeightScaleRatio;
 
 
             if (displaynodes[k] != 1) {
-                d.hidden = true;
+                //d.hidden = true;
             } else {
-                d.hidden = false;
+                //d.hidden = false;
                 nodes.update(d);
             }
         });
@@ -307,7 +307,9 @@ var glycanviewer = {
                 } else if (e.type == 'contains') {
                     e.color = {color: 'blue'};
                 }
-                edges.update(e);
+                if ((e.to in displaynodes)&&(e.from in displaynodes)){
+                    edges.update(e);
+                }
             });
         });
 
@@ -396,6 +398,111 @@ var glycanviewer = {
         var lastclick = d.getTime();
 
 
+        thisLib.network.on("doubleClick",moveWithClick);
+        function moveWithClick(data){
+            var selectnode = data.nodes;
+            if (selectnode.length > 0){
+                var connectednode = thisLib.network.getConnectedNodes(selectnode);
+                connectednode.push(selectnode);
+            }
+
+            if (connectednode.length > 1){
+                thisLib.network.fit({
+                    nodes: connectednode,
+                    animation: true
+                });
+            }
+        }
+        function enlarge(data){
+            var selectnode = data.nodes;
+            if (selectnode.length > 0){
+                var connectednode = thisLib.network.getConnectedNodes(selectnode);
+                connectednode.push(selectnode);
+            }
+
+        }
+        thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
+        function rightClickMenuGenerator(clickData){
+            /*
+            Delete everything in the div
+            Add style sheet
+            Find selected nodes
+            Make the pop-up
+            Display
+            */
+
+            var menuELE = thisLib.div_contextMenu;
+            clearEverythingInContextMenu();
+            var x = clickData.layerX;
+            var y = clickData.layerY;
+            clickData.preventDefault();
+            var root = thisLib.rootname;
+            var selectedNodes = thisLib.network.getSelectedNodes();
+            var connectedNodes = [];
+
+
+            menuELE.style = "position: absolute; left: "+x+"px; top: "+y+"px; background-color: #ffbcec; border: solid; border-color:#ff00b6; ";//width: 100px; height: 100px
+            makeButton("Close Menu","");
+            makeButtonSeparator("The Root:");
+            makeButton(root,"The root");
+
+            if (selectedNodes.length > 0){
+                selectedNodes.forEach(function(nodeID){
+                    var c0 = thisLib.network.getConnectedNodes(nodeID);
+                    connectedNodes = connectedNodes.concat(c0);
+                });
+
+                makeButtonSeparator("Selected Nodes:");
+                selectedNodes.forEach(function (nodeID) {
+                    makeButton(nodeID,"The nodes you select")
+                });
+                makeButtonSeparator("Connected Nodes:");
+                connectedNodes.forEach(function (nodeID) {
+                    makeButton(nodeID,"The nodes which connects to the selected nodes")
+                });
+
+            }
+
+
+            function clearEverythingInContextMenu(){
+                while (menuELE.firstChild){
+                    menuELE.removeChild(menuELE.firstChild);
+                }
+                menuELE.style = "";
+            }
+
+            function makeButton(nodeID,type){
+                var menuButton = document.createElement("input");
+                menuButton.setAttribute("type","button");
+                menuButton.setAttribute("value",nodeID);
+                menuButton.style = "border: none; background-color: #f44280";
+                if(nodeID == "Close Menu"){
+                    menuButton.onclick = function(){
+                        clearEverythingInContextMenu();
+                    }
+                }
+                else{
+                    menuButton.onclick = function(){
+                        var para = thisLib.para;
+                        para.content.view_root = nodeID;
+                        thisLib.init(para)
+                    }
+                }
+
+                var br = document.createElement("br");
+                menuELE.appendChild(menuButton);
+                menuELE.appendChild(br);
+
+            }
+
+            function makeButtonSeparator(blah){
+                var p = document.createElement("p");
+                p.style = "padding: 0; margin: 0";
+                p.innerHTML = blah;
+                menuELE.appendChild(p);
+            }
+
+        }
 
         var doubleClickTime = 0;
         var threshold = 200;
