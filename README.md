@@ -4,9 +4,9 @@ The JavaScript widget is used to visualize the relationship among them
 
 Update History:
 
-2018.09.13:
-Add double click on node: zoom in to the node plus the nodes connect to it.
-Add right click menu: give you the choice of jumping to root(overview) or isolating a specific branch.
+2018.09.13:<br>
+Add double click on node: zoom in to the node plus the nodes connect to it.<br>
+Add right click menu: give you the choice of jumping to root(overview) or isolating a specific branch.<br>
 
-2018.09.04:
-First version comes out.
+2018.09.04:<br>
+First version comes out.<br>
