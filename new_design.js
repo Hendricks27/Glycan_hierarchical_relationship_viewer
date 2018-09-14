@@ -398,15 +398,15 @@ var glycanviewer = {
         var lastclick = d.getTime();
 
 
-        thisLib.network.on("doubleClick",moveWithClick);
-        function moveWithClick(data){
+        thisLib.network.on("doubleClick",moveWithDoubleClick);
+        function moveWithDoubleClick(data){
             var selectnode = data.nodes;
             if (selectnode.length > 0){
                 var connectednode = thisLib.network.getConnectedNodes(selectnode);
                 connectednode.push(selectnode);
             }
 
-            if (connectednode.length > 1){
+            if (connectednode.length > 1) {
                 thisLib.network.fit({
                     nodes: connectednode,
                     animation: true
@@ -421,48 +421,85 @@ var glycanviewer = {
             }
 
         }
+
         thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
+
         function rightClickMenuGenerator(clickData){
-            /*
-            Delete everything in the div
-            Add style sheet
-            Find selected nodes
-            Make the pop-up
-            Display
-            */
+            console.log(clickData);
 
             var menuELE = thisLib.div_contextMenu;
+            var menuList = document.createElement("dl");
+
             clearEverythingInContextMenu();
+            //var x = clickData.pointer.DOM.x;
+            //var y = clickData.pointer.DOM.y;
             var x = clickData.layerX;
             var y = clickData.layerY;
             clickData.preventDefault();
+
             var root = thisLib.rootname;
-            var selectedNodes = thisLib.network.getSelectedNodes();
+            //var selectedNodes = thisLib.network.getSelectedNodes();
+            var selectedNode = thisLib.network.getNodeAt({x:x,y:y});
+            var selectedNodes = [ selectedNode ];
+            console.log(selectedNodes);
             var connectedNodes = [];
 
+            updateList("Close Menu","dt");
+            menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
 
-            menuELE.style = "position: absolute; left: "+x+"px; top: "+y+"px; background-color: #ffbcec; border: solid; border-color:#ff00b6; ";//width: 100px; height: 100px
-            makeButton("Close Menu","");
-            makeButtonSeparator("The Root:");
-            makeButton(root,"The root");
+            updateList("Jump to Composition:", "dt");
+            updateList(root, "dd");
 
-            if (selectedNodes.length > 0){
+            if (selectedNode !== undefined){
                 selectedNodes.forEach(function(nodeID){
                     var c0 = thisLib.network.getConnectedNodes(nodeID);
                     connectedNodes = connectedNodes.concat(c0);
                 });
 
-                makeButtonSeparator("Selected Nodes:");
-                selectedNodes.forEach(function (nodeID) {
-                    makeButton(nodeID,"The nodes you select")
-                });
-                makeButtonSeparator("Connected Nodes:");
-                connectedNodes.forEach(function (nodeID) {
-                    makeButton(nodeID,"The nodes which connects to the selected nodes")
+                updateList("Jump to Selected Nodes:","dt");
+                selectedNodes.forEach(function(nodeID){
+                    updateList(nodeID,"dd");
                 });
 
+                if (connectedNodes.length > 0){
+                    updateList("Jump to Connected Nodes:","dt");
+                    connectedNodes.forEach(function(nodeID){
+                        updateList(nodeID,"dd");
+                    });
+                }
             }
 
+            menuELE.appendChild(menuList);
+
+            function updateList(id,DOMType){
+                // dds are used to call functions
+                // dts are just descriptive words
+
+                var entry = document.createElement(DOMType);
+                entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
+                entry.onmouseover = function(d){
+                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
+                };
+                entry.onmouseout = function(d){
+                    entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
+                };
+                entry.innerHTML = id;
+                if(id == "Close Menu"){
+                    entry.onclick = function(){
+                        clearEverythingInContextMenu();
+                    }
+                }
+                else if (DOMType == "dd"){
+                    entry.onclick = function(){
+                        var para = thisLib.para;
+                        para.content.view_root = id;
+                        thisLib.init(para)
+                    }
+                }
+                menuList.appendChild(entry);
+                return 0;
+
+            }
 
             function clearEverythingInContextMenu(){
                 while (menuELE.firstChild){
@@ -471,38 +508,10 @@ var glycanviewer = {
                 menuELE.style = "";
             }
 
-            function makeButton(nodeID,type){
-                var menuButton = document.createElement("input");
-                menuButton.setAttribute("type","button");
-                menuButton.setAttribute("value",nodeID);
-                menuButton.style = "border: none; background-color: #f44280";
-                if(nodeID == "Close Menu"){
-                    menuButton.onclick = function(){
-                        clearEverythingInContextMenu();
-                    }
-                }
-                else{
-                    menuButton.onclick = function(){
-                        var para = thisLib.para;
-                        para.content.view_root = nodeID;
-                        thisLib.init(para)
-                    }
-                }
-
-                var br = document.createElement("br");
-                menuELE.appendChild(menuButton);
-                menuELE.appendChild(br);
-
-            }
-
-            function makeButtonSeparator(blah){
-                var p = document.createElement("p");
-                p.style = "padding: 0; margin: 0";
-                p.innerHTML = blah;
-                menuELE.appendChild(p);
-            }
-
         }
+
+
+
 
         var doubleClickTime = 0;
         var threshold = 200;
