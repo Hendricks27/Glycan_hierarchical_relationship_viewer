@@ -4,6 +4,11 @@ The JavaScript widget is used to visualize the relationship among them
 
 Update History:
 
+2018.09.19:<br>
+Double click: Use a blue border to highlight the nodes you select plus the nodes connects to it.
+Right click: bug fixed
+Mini-map: change the mini-map background from img element to canvas element
+
 2018.09.14:<br>
 Right click fix: nicer look of context menu and small bug fixed<br>
 

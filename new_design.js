@@ -67,7 +67,6 @@ var glycanviewer = {
         this.div_root = document.getElementById(thisLib.para.content.div_id);
         while (thisLib.div_root.firstChild){
             thisLib.div_root.removeChild(thisLib.div_root.firstChild);
-            console.log("removing");
         }
         this.div_root.style.overflow = "hidden";
 
@@ -282,6 +281,9 @@ var glycanviewer = {
             d.label = d.name;
             d.level -= rootlevel;
             d.shape = 'image';
+
+            d.borderColor = "#FFFFFF";
+            d.shapeProperties = {useBorderWithImage: true};
             //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
             //d.image = thisLib.para.content.img_url+d.name+'.png';
             d.image = thisLib.nodeImg[d.name];
@@ -370,8 +372,28 @@ var glycanviewer = {
                     springConstant: 0.3,
                     nodeDistance: thisLib.horizontalSpace
                 }
+            },
+            nodes: {
+                borderWidth: 0,
+                borderWidthSelected: 2,
+                chosen: true,
+                color: {
+                    border: '#FFFFFF',
+                    background: '#FFFFFF',
+                    highlight: {
+                        border: '#2B7CE9',
+                        background: '#FFFFFF'
+                    },
+                    hover: {
+                        border: '#2B7CE9',
+                        background: '#FFFFFF'
+                    }
+                }
             }
         };
+        thisLib.nodes = nodes;
+        thisLib.edges = edges;
+        thisLib.options = options;
 
         this.network.setOptions(options);
         forceredraw(true);
@@ -398,11 +420,12 @@ var glycanviewer = {
         var lastclick = d.getTime();
 
 
-        thisLib.network.on("doubleClick",moveWithDoubleClick);
-        function moveWithDoubleClick(data){
+        thisLib.network.on("doubleClick",zoomWhenDoubleClicked);
+        function zoomWhenDoubleClicked(data){
             var selectnode = data.nodes;
+            var connectednode = [];
             if (selectnode.length > 0){
-                var connectednode = thisLib.network.getConnectedNodes(selectnode);
+                connectednode = thisLib.network.getConnectedNodes(selectnode);
                 connectednode.push(selectnode);
             }
 
@@ -413,19 +436,40 @@ var glycanviewer = {
                 });
             }
         }
-        function enlarge(data){
-            var selectnode = data.nodes;
-            if (selectnode.length > 0){
-                var connectednode = thisLib.network.getConnectedNodes(selectnode);
-                connectednode.push(selectnode);
-            }
 
+        thisLib.network.on("doubleClick",highlightWhenDoubleClicked);
+        function highlightWhenDoubleClicked(data){
+            var selectnode = data.nodes;
+            if (selectnode == undefined){
+                selectnode = [];
+            }
+            if (selectnode.length > 0){
+                var highLightNodes = [];
+                selectnode.forEach(function(node){
+                    var connectedNodes = thisLib.network.getConnectedNodes(node);
+                    highLightNodes = highLightNodes.concat(connectedNodes);
+                    highLightNodes.push(node);
+                });
+
+                highLightNodes.forEach(function(nodeID){
+                    // Alternative way to highlight the node - Enlarge the node
+                    //nodes._data[nodeID].size = nodes._data[nodeID].size * 1.5;
+                });
+
+                thisLib.network.selectNodes(highLightNodes);
+
+                //forceredraw(false);
+
+            }
         }
 
+
+        // Context menu, pop-up when you right click
         thisLib.div_network.addEventListener("contextmenu",rightClickMenuGenerator,false);
 
         function rightClickMenuGenerator(clickData){
-            console.log(clickData);
+            //console.log(clickData);
+            document.addEventListener("click",clearEverythingInContextMenu,{once: true});
 
             var menuELE = thisLib.div_contextMenu;
             var menuList = document.createElement("dl");
@@ -441,10 +485,9 @@ var glycanviewer = {
             //var selectedNodes = thisLib.network.getSelectedNodes();
             var selectedNode = thisLib.network.getNodeAt({x:x,y:y});
             var selectedNodes = [ selectedNode ];
-            console.log(selectedNodes);
             var connectedNodes = [];
 
-            updateList("Close Menu","dt");
+            //updateList("Close Menu","dt");
             menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
 
             updateList("Jump to Composition:", "dt");
@@ -501,53 +544,18 @@ var glycanviewer = {
 
             }
 
-            function clearEverythingInContextMenu(){
-                while (menuELE.firstChild){
-                    menuELE.removeChild(menuELE.firstChild);
-                }
-                menuELE.style = "";
-            }
 
         }
 
-
-
-
-        var doubleClickTime = 0;
-        var threshold = 200;
-        function onClick(params) {
-            var t0 = new Date();
-            if (t0 - doubleClickTime > threshold) {
-                setTimeout(function () {
-                    if (t0 - doubleClickTime > threshold) {
-                        doOnClick(params);
-                    }
-                },threshold);
+        function clearEverythingInContextMenu(){
+            //console.log("closing");
+            var menuELE = thisLib.div_contextMenu;
+            while (menuELE.firstChild){
+                menuELE.removeChild(menuELE.firstChild);
             }
+            menuELE.style = "";
         }
 
-        function doOnClick(params) {
-            if (params['nodes'].length != 1) {
-                return;
-            }
-            var id = params['nodes'][0];
-            if (id == rootname) {
-                if (parentnode) {
-                    window.location.href='network1.html?'+parts[0]+'&'+parts[1]+'&'+parts[2]+"&"+parentnode;
-                }
-            } else {
-                window.location.href='network1.html?'+parts[0]+'&'+parts[1]+'&'+parts[2]+"&"+id;
-            }
-        }
-
-        function onDoubleClick(params) {
-            doubleClickTime = new Date();
-            if (params['nodes'].length != 1) {
-                return;
-            }
-            var id = params['nodes'][0];
-            window.open('http://edwardslab.bmcb.georgetown.edu/smw/'+id,'_blank');
-        }
     },
 
 
@@ -567,7 +575,45 @@ var glycanviewer = {
         var thisLib = this;
         var currentScale = this.network.getScale();
         var currentPos = this.network.getViewPosition();
-        this.network.fit(capture());
+
+        while(thisLib.div_navi.firstChild){
+            thisLib.div_navi.remove(thisLib.div_navi.firstChild)
+        }
+
+        var css = thisLib.naviWindowPos() + " background-color: #f2ffff; height: "+ thisLib.naviWindowHeight + "px; width: " + thisLib.naviWindowWidth + "px;";
+        thisLib.div_navi.style = css;
+
+        var naviNetworkContainer = document.createElement("div");
+        naviNetworkContainer.style = "position: absolute; border: 1px solid lightgray; height: 100%; width: 100%";
+
+        thisLib.div_navi.appendChild(naviNetworkContainer);
+        var naviNetwork = new vis.Network(naviNetworkContainer);
+        var data, nodes, edges, options;
+        nodes = thisLib.nodes;
+        edges = thisLib.edges;
+        options = thisLib.options;
+        data = {
+            nodes: nodes,
+            edges: edges
+        };
+        naviNetwork.setOptions(options);
+        naviNetwork.setData(data);
+
+        thisLib.rectPointer = document.createElement("canvas");
+        thisLib.rectPointer.setAttribute("style","position: absolute; border: 1px solid lightgray;"); // border: 1px solid lightgray
+        thisLib.rectPointer.setAttribute("width",thisLib.naviWindowWidth);
+        thisLib.rectPointer.setAttribute("height",thisLib.naviWindowHeight);
+        //thisLib.rectPointer.setAttribute("id","glycanviewer_rect");
+
+        thisLib.div_navi.appendChild(thisLib.rectPointer);
+
+        thisLib.fitScale = thisLib.network.getScale();
+        thisLib.fitPos = thisLib.network.getViewPosition();
+
+        thisLib.whereAmI();
+
+
+        //this.network.fit(capture());
 
         function capture(){
             var networkCanvas = thisLib.div_network.getElementsByTagName("canvas")[0];
@@ -689,53 +735,42 @@ var glycanviewer = {
     },
 
     naviWindowPos : function (){
+        this.naviWindowSizeCalc();
+        var h = this.naviWindowHeight;
+        var w = this.naviWindowWidth;
+        var pos = this.para.navi.position;
 
-        var tl2b = 0,
+        var tl2t = 0,
+            tl2b = 0,
+            tl2r = 0,
             tl2l = 0;
+        var css = "position: absolute; ";
 
-        if (this.para.navi.position == 1){
-            tl2l = 10;
-            tl2b = this.div_root.clientHeight - 10 ;
-            if (this.para.display.enable_title)
-            {
-                tl2b = tl2b - 30;
-            }
-
+        if (pos == 1 || pos == 3){
+            tl2l = w / 10;
+            css += "left: "+tl2l+"px; "
         }
 
-        if (this.para.navi.position == 2){
-            tl2l = this.div_root.clientWidth - this.naviWindowWidth * 1.1 ;
-            tl2b = this.div_root.clientHeight - 10 ;
-            if (this.para.display.enable_title)
-            {
-                tl2b = tl2b - 30;
-            }
+        if (pos == 2 || pos == 4){
+            //tl2r = this.div_root.clientWidth - w * 1.1;
+            tl2r = w / 10;
+            css += "right: "+tl2r+"px; "
         }
 
-        if (this.para.navi.position == 3){
-            tl2b = this.naviWindowHeight + 10;
-            if (this.para.display.enable_title)
-            {
-                tl2b = tl2b + 30;
-            }
-
-            tl2l = 10 ;
+        if (pos == 1 || pos == 2){
+            tl2t = h / 10;
+            css += "top: "+ tl2t +"px; "
         }
 
-        if (this.para.navi.position == 4){
-            tl2b = this.naviWindowHeight + 10;
+        if (pos == 3 || pos == 4){
+            tl2b = h / 10;
             if (this.para.display.enable_title)
             {
-                tl2b = tl2b + 30;
+                tl2b = tl2b + 27;
             }
-
-            tl2l = this.div_root.clientWidth - this.naviWindowWidth * 1.1 ;
+            css += "bottom: "+tl2b+"px; "
         }
-
-        var css = "position: absolute; bottom: " + tl2b + "px; left: " + tl2l + "px;";
-        return css
-
-
+        return css;
     },
 
     // *********************************************************
