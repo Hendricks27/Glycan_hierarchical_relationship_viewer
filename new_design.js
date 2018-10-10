@@ -5,6 +5,7 @@ var glycanviewer = {
     // It is not necessary to do so
     // It is just a reminder of I can use this "things" directly
 
+    firstInit : true,
     // A list of div in HTML page. save the trouble of document.getElement blah blah
     div_root: 0,
     div_header: 0,
@@ -29,6 +30,7 @@ var glycanviewer = {
     nodeImg : {},
 
 
+
     init: function (parameters) {
         if (this.IEQuestionMark())
         {
@@ -36,22 +38,23 @@ var glycanviewer = {
         }
         else {
             this.para = this.paraCheck(parameters);
+            this.component = parameters.essentials.component;
             this.allocateDiv();
-            this.getJson();
+            this.dataPreProcessing();
         }
     },
 
     // Check the integrity and legitimacy of the parameters
     paraCheck : function (para){
         var checked = para;
-        if (!para.navi.size){
-            checked.navi.size = 0.15;
+        if (!para.display.naviOption.size){
+            checked.display.naviOption.size = 0.15;
         }
-        if (!para.navi.position){
-            checked.navi.position = 4;
+        if (!para.display.naviOption.postion){
+            checked.display.naviOption.postion = 4;
         }
-        if (![1,2,3,4].includes(para.navi.position)){
-            checked.navi.position = 4;
+        if (![1,2,3,4].includes(para.display.naviOption.postion)){
+            checked.display.naviOption.postion = 4;
         }
         return checked
     },
@@ -61,10 +64,10 @@ var glycanviewer = {
         var thisLib = this;
 
         // This variable stands for the prefix of the div id.
-        var id = this.para.content.div_id + "_glycanviewer_";
+        var id = this.para.essentials.div_ID + "_glycanviewer_";
 
         //Locate the div && pre allocate space for each gadgets
-        this.div_root = document.getElementById(thisLib.para.content.div_id);
+        this.div_root = document.getElementById(thisLib.para.essentials.div_ID);
         while (thisLib.div_root.firstChild){
             thisLib.div_root.removeChild(thisLib.div_root.firstChild);
         }
@@ -111,39 +114,22 @@ var glycanviewer = {
 
         var component = this.component;
         var rootname = component.root;
-        var topoonly = this.para.content.topoonly;
+        var topoonly = this.para.essentials.topoOnly;
 
         this.rootname = rootname;
         this.topoonly = topoonly;
 
 
-        if (this.para.content.view_root){
-            rootname = this.para.content.view_root;
+        if (this.para.essentials.viewRoot){
+            rootname = this.para.essentials.viewRoot;
         }
-        recomputeLevels(component);
 
-        function recomputeLevels(component) {
-            var toexplore = [ component.root ];
-            var r;
-            while (true) {
-                if (toexplore.length == 0) {
-                    break;
-                }
-                r = toexplore.pop();
-                var rlevel = component.nodes[r].level;
-                if (r in component.edges) {
-                    component.edges[r].forEach(function(e) {
-                        if (component.nodes[e.to].level < (rlevel+1)) {
-                            component.nodes[e.to].level = (rlevel+1);
-                        }
-                        toexplore.push(e.to);
-                    });
-                }
-            }
-        }
+        computeLevels();
+        function computeLevels(){}
+
 
         // Loading the title
-        if (this.para.display.enable_title){
+        if (this.para.display.enableTitle){
             var header = document.createElement("h2");
             header.style = "margin: 1px;";
             this.div_header.appendChild(header);
@@ -153,12 +139,15 @@ var glycanviewer = {
 
         this.network = new vis.Network(thisLib.div_network);
 
+        // Original code for computing level
+        /*
         var displaynodes = {};
         var toexplore = [ rootname ];
         var parentnode;
         var rootlevel = component.nodes[rootname].level;
 
         while (true) {
+            break;
             if (toexplore.length == 0) {
                 break;
             }
@@ -181,13 +170,14 @@ var glycanviewer = {
                 })
             });
         }
-        this.rootlevel = rootlevel;
-        this.displaynodes = displaynodes;
+        */
 
+        this.computeLevel(component, rootname);
+        var displaynodes = this.displaynodes;
 
         // Calculate the nodeSpace and height scale ratio
         var nodeImageScaleRatioComparedToDefaultSetting = 2.0, // It means how many fold larger do you want your node to present
-            nodeHorizotalSpaceRatio = 0.95;
+            nodeHorizontalSpaceRatio = 0.95;
         // How many ford larger do you want the node space to be. 1 means just no overlap
         var allWidth = [],
             allHeight = [];
@@ -202,9 +192,10 @@ var glycanviewer = {
                 allWidth.push(d.width);
                 allHeight.push(d.height);
                 thisLib.resouceStatus[d.name] = false;
-                thisLib.getBase64Image(d.name);
+                thisLib.getImageURL(d.name);
             }
         });
+
 
         /*
         In case of the outlier (extremely high&thin or short&fat images) that only occurs 1 time
@@ -215,20 +206,90 @@ var glycanviewer = {
         greatestWidth = allWidth[0];
         greatestHeight = allHeight[0];
 
-        var magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
-        horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizotalSpaceRatio *2;
+
+        var magicNumberForHeightScaleRatio = 5;
+        if (greatestWidth != undefined && greatestHeight != undefined ){
+            magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
+            horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizontalSpaceRatio *2;
+        }
+
 
         this.magicNumberForHeightScaleRatio = magicNumberForHeightScaleRatio;
         this.verticalSpace = verticalSpace;
         this.horizontalSpace = horizontalSpace;
 
 
+        if(this.para.essentials.useGlyTouCanAsImageSource){
+            this.networkDraw();
+        }
+
+
+    },
+
+    computeLevel : function(component, rootname){
+
+        var rootlevel = 0;
+        var thisLevel = 0;
+        var thisLevelNodes = [ rootname ];
+        var nextLevelNodes = [];
+        var displaynodes = [];
+
+        // Change all nodes level to undefined
+        for (var node in component.nodes){
+            var a = component.nodes[node].level;
+            component.nodes[node].level = 1;
+            var b = component.nodes[node].level;
+            //console.log(a,b);
+        }
+
+        while (thisLevelNodes.length > 0){
+            for(var i=0; i < thisLevelNodes.length; i++){
+                var currentNode = thisLevelNodes[i];
+                var edgesOfCurrentNode = component.edges[currentNode];
+                if (edgesOfCurrentNode != undefined){
+                    for (var currentEdgeIndex in edgesOfCurrentNode){
+                        var currentEdge = edgesOfCurrentNode[currentEdgeIndex];
+                        nextLevelNodes.push(currentEdge.to);
+                        component.nodes[ currentNode ].level = thisLevel;
+                        displaynodes[ currentNode ] = 1;
+                    }
+                }
+                else{
+                    component.nodes[ currentNode ].level = thisLevel;
+                    displaynodes[ currentNode ] = 1;
+                }
+
+            }
+
+            thisLevelNodes = nextLevelNodes;
+            nextLevelNodes = [];
+            thisLevel += 1;
+        }
+
+        this.rootlevel = rootlevel;
+        this.displaynodes = displaynodes;
+        this.component = component;
+
+    },
+
+    getImageURL : function (accession){
+        if (this.para.essentials.useGlyTouCanAsImageSource){
+            this.getGlyTouCanImageURL(accession);
+        }
+        else{
+            this.getBase64Image(accession);
+        }
+    },
+
+    getGlyTouCanImageURL : function(accession){
+        var url = "https://glytoucan.org/glycans/" + accession + "/image?style=extended&format=png&notation=cfg";
+        this.nodeImg[accession] = url;
     },
 
     getBase64Image : function (accession){
         var thisLib = this;
 
-        var imgURL = this.para.content.img_url + accession + ".png";
+        var imgURL = this.para.essentials.imgURL + accession + ".png";
 
         var img = document.createElement("img");
         img.setAttribute("src",imgURL);
@@ -283,9 +344,10 @@ var glycanviewer = {
             d.shape = 'image';
 
             d.borderColor = "#FFFFFF";
-            d.shapeProperties = {useBorderWithImage: true};
-            //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
-            //d.image = thisLib.para.content.img_url+d.name+'.png';
+            d.shapeProperties = {
+                useBorderWithImage: true
+            };
+
             d.image = thisLib.nodeImg[d.name];
 
             d.size = d.height / thisLib.magicNumberForHeightScaleRatio;
@@ -411,7 +473,7 @@ var glycanviewer = {
             function temp(){
                 setTimeout(drawNavi,50);
             }
-            if (thisLib.para.navi.enable ){
+            if (thisLib.para.display.enableNavi ){
                 thisLib.network.once('afterDrawing', temp, false);
             }
         }
@@ -535,7 +597,7 @@ var glycanviewer = {
                 else if (DOMType == "dd"){
                     entry.onclick = function(){
                         var para = thisLib.para;
-                        para.content.view_root = id;
+                        para.essentials.viewRoot = id;
                         thisLib.init(para)
                     }
                 }
@@ -718,7 +780,7 @@ var glycanviewer = {
 
     naviWindowSizeCalc : function (){
         var networkCanvas = this.div_network.getElementsByTagName("canvas")[0];
-        var percentage = this.para.navi.size;
+        var percentage = this.para.display.naviOption.size;
         var devicePixelRatio = window.devicePixelRatio;
         var w1 = Math.round(networkCanvas.width * percentage / devicePixelRatio);
         var h1 = Math.round(networkCanvas.height * percentage / devicePixelRatio);
@@ -738,7 +800,7 @@ var glycanviewer = {
         this.naviWindowSizeCalc();
         var h = this.naviWindowHeight;
         var w = this.naviWindowWidth;
-        var pos = this.para.navi.position;
+        var pos = this.para.display.naviOption.position;
 
         var tl2t = 0,
             tl2b = 0,
@@ -764,7 +826,7 @@ var glycanviewer = {
 
         if (pos == 3 || pos == 4){
             tl2b = h / 10;
-            if (this.para.display.enable_title)
+            if (this.para.display.enableTitle)
             {
                 tl2b = tl2b + 27;
             }
@@ -789,167 +851,167 @@ var glycanviewer = {
     },
 
     compatibleDraw : function(para){
-        d3.json(para.content.json_url, function(data){
-            var component = data[para.content.composition];
 
-            var rootname = component.root;
-            var topoonly = para.content.topoonly;
+        var component = para.essentials.component;
 
-            if (para.content.view_root){
-                rootname = para.content.view_root;
-            }
-            recomputeLevels(component);
+        var rootname = component.root;
+        var topoonly = para.essentials.topoOnly;
 
-            function recomputeLevels(component) {
-                var toexplore = [ component.root ];
-                var r;
-                while (true) {
-                    if (toexplore.length == 0) {
-                        break;
-                    }
-                    r = toexplore.pop();
-                    var rlevel = component.nodes[r].level;
-                    if (r in component.edges) {
-                        component.edges[r].forEach(function(e) {
-                            if (component.nodes[e.to].level < (rlevel+1)) {
-                                component.nodes[e.to].level = (rlevel+1);
-                            }
-                            toexplore.push(e.to);
-                        });
-                    }
-                }
-            }
+        if (para.essentials.viewRoot){
+            rootname = para.essentials.viewRoot;
+        }
+        recomputeLevels(component);
 
-            // Loading the title
-            var div_root = document.getElementById(para.content.div_id);
-            while(div_root.firstChild){
-                div_root.removeChild(div_root.firstChild);
-            }
-            var id = para.content.div_id + "_glycanviewer_";
-
-            var networkContainer = document.createElement("div");
-            networkContainer.id = id+"networkContainer";
-            networkContainer.setAttribute("style","width: 100%; height: 90%;position: relative; left: 0; top: 0;");
-            var header = document.createElement("h2");
-            header.innerHTML = "For better user experience and new features, Please Please Please use modern browsers";
-
-            div_root.appendChild(header);
-            div_root.appendChild(networkContainer);
-
-            var network = new vis.Network(networkContainer);
-
-            var displaynodes = {};
-            var toexplore = [ rootname ];
-            var parentnode;
-            var rootlevel = component.nodes[rootname].level;
-
+        function recomputeLevels(component) {
+            var toexplore = [ component.root ];
+            var r;
             while (true) {
                 if (toexplore.length == 0) {
                     break;
                 }
-                var r = toexplore.pop();
-                if (topoonly == 1) {
-                    if (component.nodes[r].type != 'Saccharide') {
-                        displaynodes[r] = 1;
-                    }
-                } else {
+                r = toexplore.pop();
+                var rlevel = component.nodes[r].level;
+                if (r in component.edges) {
+                    component.edges[r].forEach(function(e) {
+                        if (component.nodes[e.to].level < (rlevel+1)) {
+                            component.nodes[e.to].level = (rlevel+1);
+                        }
+                        toexplore.push(e.to);
+                    });
+                }
+            }
+        }
+
+        // Loading the title
+        var div_root = document.getElementById(para.essentials.div_ID);
+        while(div_root.firstChild){
+            div_root.removeChild(div_root.firstChild);
+        }
+        var id = para.essentials.div_ID + "_glycanviewer_";
+
+        var networkContainer = document.createElement("div");
+        networkContainer.id = id+"networkContainer";
+        networkContainer.setAttribute("style","width: 100%; height: 90%;position: relative; left: 0; top: 0;");
+        var header = document.createElement("h2");
+        header.innerHTML = "For better user experience and new features, Please Please Please use modern browsers";
+
+        div_root.appendChild(header);
+        div_root.appendChild(networkContainer);
+
+        var network = new vis.Network(networkContainer);
+
+        var displaynodes = {};
+        var toexplore = [ rootname ];
+        var parentnode;
+        var rootlevel = component.nodes[rootname].level;
+
+        while (true) {
+            if (toexplore.length == 0) {
+                break;
+            }
+            var r = toexplore.pop();
+            if (topoonly == 1) {
+                if (component.nodes[r].type != 'Saccharide') {
                     displaynodes[r] = 1;
                 }
-                d3.keys(component.edges).forEach(function (k) {
-                    component.edges[k].forEach(function(e) {
-                        if (e.from == r) {
-                            toexplore.push(e.to);
-                        }
-                        if (e.to == rootname) {
-                            parentnode = e.from;
-                        }
-                    })
-                });
+            } else {
+                displaynodes[r] = 1;
             }
-
-
-            // Calculate the nodeSpace and height scale ratio
-            var nodeImageScaleRatioComparedToDefaultSetting = 2.0, // It means how many fold larger do you want your node to present
-                nodeHorizotalSpaceRatio = 0.95;
-            // How many ford larger do you want the node space to be. 1 means just no overlap
-            var allWidth = [],
-                allHeight = [];
-            var greatestWidth = 0,
-                greatestHeight = 0;
-            var verticalSpace = 150,
-                horizontalSpace = 150; //those 2 values are default value
-
-            d3.keys(component.nodes).forEach(function (k) {
-                var d = component.nodes[k];
-                if (displaynodes[k] == 1) {
-                    allWidth.push(d.width);
-                    allHeight.push(d.height);
-                }
-            });
-
-            allWidth.sort(function(a, b){return b-a});
-            allHeight.sort(function(a, b){return b-a});
-            greatestWidth = allWidth[0];
-            greatestHeight = allHeight[0];
-
-            var magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
-            horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizotalSpaceRatio *2;
-
-            var nodes = new vis.DataSet();
-            d3.keys(component.nodes).forEach(function (k) {
-                var d = component.nodes[k];
-                d.id = d.name;
-                d.label = d.name;
-                d.level -= rootlevel;
-                d.shape = 'image';
-                //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
-                d.image = para.content.img_url+d.name+'.png';
-
-                d.size = d.height / magicNumberForHeightScaleRatio;
-
-
-                if (displaynodes[k] != 1) {
-                    d.hidden = true;
-                } else {
-                    d.hidden = false;
-                    nodes.update(d);
-                }
-            });
-
-
-            var edges = new vis.DataSet();
             d3.keys(component.edges).forEach(function (k) {
                 component.edges[k].forEach(function(e) {
-                    e.arrows = 'middle';
-                    if (e.type == 'equals') {
-                        e.color = {color:'red'};
-                    } else if (e.type == 'contains') {
-                        e.color = {color: 'blue'};
+                    if (e.from == r) {
+                        toexplore.push(e.to);
                     }
-                    edges.update(e);
-                });
+                    if (e.to == rootname) {
+                        parentnode = e.from;
+                    }
+                })
             });
+        }
 
-            // create a network
-            var data = {
-                nodes: nodes,
-                edges: edges
-            };
-            var options = {
-                layout: {
-                    hierarchical: {
-                        direction: 'UD',
-                        enabled: true,
-                        levelSeparation: verticalSpace, // the default value is 150
-                        nodeSpacing: horizontalSpace // might be affected by physics engine, default value 100
-                    }
-                }
-            };
 
-            network.setOptions(options);
-            network.setData(data);
-            network.fit()
+        // Calculate the nodeSpace and height scale ratio
+        var nodeImageScaleRatioComparedToDefaultSetting = 2.0, // It means how many fold larger do you want your node to present
+            nodeHorizotalSpaceRatio = 0.95;
+        // How many ford larger do you want the node space to be. 1 means just no overlap
+        var allWidth = [],
+            allHeight = [];
+        var greatestWidth = 0,
+            greatestHeight = 0;
+        var verticalSpace = 150,
+            horizontalSpace = 150; //those 2 values are default value
+
+        d3.keys(component.nodes).forEach(function (k) {
+            var d = component.nodes[k];
+            if (displaynodes[k] == 1) {
+                allWidth.push(d.width);
+                allHeight.push(d.height);
+            }
         });
+
+        allWidth.sort(function(a, b){return b-a});
+        allHeight.sort(function(a, b){return b-a});
+        greatestWidth = allWidth[0];
+        greatestHeight = allHeight[0];
+
+        var magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
+        horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizotalSpaceRatio *2;
+
+        var nodes = new vis.DataSet();
+        d3.keys(component.nodes).forEach(function (k) {
+            var d = component.nodes[k];
+            d.id = d.name;
+            d.label = d.name;
+            d.level -= rootlevel;
+            d.shape = 'image';
+            //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
+            d.image = para.essentials.imgURL + d.name + '.png';
+
+            d.size = d.height / magicNumberForHeightScaleRatio;
+
+
+            if (displaynodes[k] != 1) {
+                d.hidden = true;
+            } else {
+                d.hidden = false;
+                nodes.update(d);
+            }
+        });
+
+
+        var edges = new vis.DataSet();
+        d3.keys(component.edges).forEach(function (k) {
+            component.edges[k].forEach(function(e) {
+                e.arrows = 'middle';
+                if (e.type == 'equals') {
+                    e.color = {color:'red'};
+                } else if (e.type == 'contains') {
+                    e.color = {color: 'blue'};
+                }
+                edges.update(e);
+            });
+        });
+
+        // create a network
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {
+            layout: {
+                hierarchical: {
+                    direction: 'UD',
+                    enabled: true,
+                    levelSeparation: verticalSpace, // the default value is 150
+                    nodeSpacing: horizontalSpace // might be affected by physics engine, default value 100
+                }
+            }
+        };
+
+        network.setOptions(options);
+        network.setData(data);
+        network.fit()
+
     }
 
 

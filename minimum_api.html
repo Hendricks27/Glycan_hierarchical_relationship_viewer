@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <script src="new_design.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
@@ -11,24 +12,31 @@
 
 <script>
 
-    var demo_option = {
-        content : {
-            div_id : "uniqueID",
-            composition : "G01924ZE",
-            topoonly : 0,
-            view_root : "",//G27658AJ
-            json_url : "comp.json",
-            img_url : "img/"
+    var demo_option_template = {
+        essentials : {
+            div_ID : "uniqueID", // the ID of div container
+            component : {}, // the data
+            topoOnly : 0,
+            viewRoot : "",
+            useGlyTouCanAsImageSource : false,
+            imgURL : "img/"
         },
         display : {
-            enable_title : true
-        },
-        navi : {
-            enable : true
+            enableTitle : true,
+            enableNavi : true,
+            naviOption : {
+                size : 0.2,
+                position : 4
+            }
         }
     };
 
-    glycanviewer.init(demo_option);
+    d3.json("comp.json", function(data){
+        demo_option_template.essentials.component = data["G01924ZE"];
+        glycanviewer.init(demo_option_template);
+    });
+
+
 </script>
 </body>
 </html>

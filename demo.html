@@ -45,6 +45,8 @@
 
         randomChoose5();
 
+        loadGraph();
+
     });
 
 
@@ -74,32 +76,36 @@
     }
 
     function refresh(acc){
-        demo_option.content.composition = acc;
-        demo_option.content.view_root = "";
-        glycanviewer.init(demo_option);
+        demo_option_template.essentials.component = content[acc];
+        demo_option_template.essentials.viewRoot = "";
+        glycanviewer.init(demo_option_template);
     }
 
     // A demo of how to use my API
-    var demo_option = {
-        content : {
-            div_id : "uniqueID",
-            composition : "G01924ZE",
-            topoonly : 0,
-            view_root : "",
-            json_url : "comp.json",
-            img_url : "img/"
+    var demo_option_template = {
+        essentials : {
+            div_ID : "uniqueID", // the ID of div container
+            component : {}, // the data
+            topoOnly : 0,
+            viewRoot : "",
+            useGlyTouCanAsImageSource : false,
+            imgURL : "img/"
         },
         display : {
-            enable_title : true
-        },
-        navi : {
-            enable : true,
-            size : 0.2, // navi window size percentage compared to the whole graph. Recommend 0.1 to 0.2 (Can be omitted, default set to 0.15)
-            position : 4 // 1,2,3,4 : top left, top right, bottom left, bottom right.(Can be omitted. default set to 4)
+            enableTitle : true,
+            enableNavi : true,
+            naviOption : {
+                size : 0.2, // navi window size percentage compared to the whole graph. Recommend 0.1 to 0.2 (Can be omitted, default set to 0.15)
+                position : 4 // 1,2,3,4 : top left, top right, bottom left, bottom right.(Can be omitted. default set to 4)
+            }
         }
     };
 
-    glycanviewer.init(demo_option);
+    function loadGraph(){
+        demo_option_template.essentials.component = content["G01924ZE"];
+        glycanviewer.init(demo_option_template);
+    }
+
 </script>
 </body>
 </html>
