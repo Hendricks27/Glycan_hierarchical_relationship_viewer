@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="new_design.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+
+<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 800px; height: 600px; right: 0;"></div>
+<button onclick="next(-1)">previous</button>
+<button onclick="next(1)">next</button>
+
+<script>
+
+    var demo_option_template = {
+        essentials : {
+            div_ID : "uniqueID", // the ID of div container
+            component : {}, // the data
+            topoOnly : 0,
+            viewRoot : "",
+            useGlyTouCanAsImageSource : true,
+            imgURL : "img/"
+        },
+        display : {
+            enableTitle : true,
+            enableNavi : true,
+            naviOption : {
+                size : 0.2,
+                position : 4
+            }
+        }
+
+    };
+
+
+    demo_option_template.essentials.component = {
+        nodes : {
+            "G08371CD" : {
+                "type" : "whatever",
+                "level" : 0,
+                "name" : "G08371CD"
+            },
+            "G36123IU" : {
+                "type" : "whatever",
+                "level" : 0,
+                "name" : "G36123IU"
+            },
+            "G73708UL" : {
+                "type" : "whatever",
+                "level" : 0,
+                "name" : "G73708UL"
+            }
+        },
+        edges : {
+            "G08371CD" : [
+                {
+                    "to" : "G36123IU",
+                    "from" : "G08371CD",
+                    "type" : "contains"
+                },
+                {
+                    "to" : "G73708UL",
+                    "from" : "G08371CD",
+                    "type" : "contains"
+                }
+            ]
+        },
+        root : "G08371CD",
+        mw : "100.3",
+        name : "G08371CD"
+    };
+
+
+    demo_option_template.essentials.component = {"mw": "Unknown", "nodes": {"G00056MO": {"type": "Whatever", "name": "G00056MO", "level": 0}, "G04616ST": {"type": "Whatever", "name": "G04616ST", "level": 0}, "G00055MO": {"type": "Whatever", "name": "G00055MO", "level": 0}, "G47428UI": {"type": "Whatever", "name": "G47428UI", "level": 0}, "Ancestor": {"type": "Whatever", "name": "Ancestor", "level": 0}, "G51331BY": {"type": "Whatever", "name": "G51331BY", "level": 0}}, "root": "Ancestor", "name": "Ancestor", "edges": {"G04616ST": [{"to": "G00056MO", "from": "G04616ST", "type": "contains"}], "Ancestor": [{"to": "G04616ST", "from": "Ancestor", "type": "contains"}, {"to": "G47428UI", "from": "Ancestor", "type": "contains"}, {"to": "G51331BY", "from": "Ancestor", "type": "contains"}], "G47428UI": [{"to": "G00055MO", "from": "G47428UI", "type": "contains"}, {"to": "G00056MO", "from": "G47428UI", "type": "contains"}], "G51331BY": [{"to": "G00055MO", "from": "G51331BY", "type": "contains"}]}};
+    glycanviewer.init(demo_option_template);
+
+    var data, l, current = 0;
+    d3.json("relationship.json", function(d){
+        data = d;
+        l = d.length;
+    });
+
+    function next(num){
+        var newindex = current + num;
+        if (newindex>0 && newindex<l){
+            current = newindex
+        }
+
+        var component = data[current];
+        demo_option_template.essentials.component = component;
+        glycanviewer.init(demo_option_template);
+    }
+
+
+</script>
+</body>
+</html>
