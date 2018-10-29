@@ -212,6 +212,10 @@ var glycanviewer = {
             magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
             horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizontalSpaceRatio *2;
         }
+        else{
+            verticalSpace = 220;
+            horizontalSpace = 400;
+        }
 
 
         this.magicNumberForHeightScaleRatio = magicNumberForHeightScaleRatio;

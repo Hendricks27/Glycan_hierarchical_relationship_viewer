@@ -85,12 +85,10 @@
     demo_option_template.essentials.component = {"mw": "Unknown", "nodes": {"G58896AZ": {"type": "Whatever", "name": "G58896AZ", "level": 0}, "G00049MO": {"type": "Whatever", "name": "G00049MO", "level": 0}, "G40585SO": {"type": "Whatever", "name": "G40585SO", "level": 0}, "FakeComposition": {"type": "Whatever", "name": "FakeComposition", "level": 0}, "G48059CD": {"type": "Whatever", "name": "G48059CD", "level": 0}, "G45827GY": {"type": "Whatever", "name": "G45827GY", "level": 0}}, "root": "FakeComposition", "name": "FakeComposition", "edges": {"FakeComposition": [{"to": "G40585SO", "from": "FakeComposition", "type": "contains"}, {"to": "G48059CD", "from": "FakeComposition", "type": "contains"}, {"to": "G45827GY", "from": "FakeComposition", "type": "contains"}], "G48059CD": [{"to": "G58896AZ", "from": "G48059CD", "type": "contains"}], "G45827GY": [{"to": "G00049MO", "from": "G45827GY", "type": "contains"}]}}
     glycanviewer.init(demo_option_template);
 
-    var data, keys, l, current = -1;
-    d3.json("topology.json", function(d){
+    var data, l, current = -1;
+    d3.json("substructure.json", function(d){
         data = d;
-        console.log(data);
-        keys = Object.keys(data);
-        l = keys.length;
+        l = data.length;
     });
 
     function next(num){
@@ -99,7 +97,7 @@
             current = newindex
         }
 
-        var component = data[keys[current]];
+        var component = data[current];
         demo_option_template.essentials.component = component;
         glycanviewer.init(demo_option_template);
         refresh();
@@ -109,7 +107,7 @@
 
 
     function refresh(){
-        var component = data[keys[current]];
+        var component = data[current];
         var div = document.getElementById("forcerefresh");
         while(div.firstChild){
             div.removeChild(div.firstChild);
@@ -135,13 +133,11 @@
     function jumpto(){
         numx = document.getElementById("jumptoindex").value;
         numx = parseInt(numx);
-        console.log(numx);
-
 
         if (numx>=0 && numx<l){
             current = numx;
 
-            var component = data[keys[current]];
+            var component = data[current];
             demo_option_template.essentials.component = component;
             glycanviewer.init(demo_option_template);
             refresh();
