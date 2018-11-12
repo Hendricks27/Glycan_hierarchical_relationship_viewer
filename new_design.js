@@ -224,6 +224,10 @@ var glycanviewer = {
 
 
         if(this.para.essentials.useGlyTouCanAsImageSource){
+            for (var node in component.nodes){
+                var img = new Images();
+                img.src = "https://glytoucan.org/glycans/" + node + "/image?style=extended&format=png&notation=cfg"
+            }
             this.networkDraw();
         }
 
