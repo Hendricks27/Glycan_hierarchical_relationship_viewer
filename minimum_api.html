@@ -31,6 +31,36 @@
         }
     };
 
+    var demo_option_new = {
+        essentials : {
+            div_ID : "uniqueID", // the ID of div container
+            component : {}, // the data
+            topoOnly : 0,
+            viewRoot : "",
+            useGlyTouCanAsImageSource : false,
+            GlyTouCanImgPara: {
+                style: "extended", // Other Options: normal, compact
+                format: "png", // Other Options: jpg
+                notation: "cfg" // Other Options: cfgbw, uoxf, uoxf-color, cfg-uoxf, iupac
+            },
+            imgURL : "img/"
+        },
+        display : {
+            enableTitle: true,
+            enableNavi: true,
+            naviOption: {
+                size: 0.2,
+                position: 4
+            }
+        },
+        contextMenu : {
+            enable: true,
+            default: true,
+            externalURL1: "https://edwardslab.bmcb.georgetown.edu/glycomotifdev/GM.",
+            externalURL2: ""
+        }
+    };
+
     d3.json("comp.json", function(data){
         demo_option_template.essentials.component = data["G01924ZE"];
         glycanviewer.init(demo_option_template);
