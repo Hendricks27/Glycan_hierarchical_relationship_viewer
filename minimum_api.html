@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="new_design.js"></script>
+    <script src="hgv.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
     <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
@@ -12,58 +12,44 @@
 
 <script>
 
-    var demo_option_template = {
-        essentials : {
-            div_ID : "uniqueID", // the ID of div container
-            component : {}, // the data
-            topoOnly : 0,
-            viewRoot : "",
-            useGlyTouCanAsImageSource : false,
-            imgURL : "img/"
-        },
-        display : {
-            enableTitle : true,
-            enableNavi : true,
-            naviOption : {
-                size : 0.2,
-                position : 4
-            }
-        }
-    };
-
     var demo_option_new = {
         essentials : {
             div_ID : "uniqueID", // the ID of div container
             component : {}, // the data
             topoOnly : 0,
             viewRoot : "",
-            useGlyTouCanAsImageSource : false,
-            GlyTouCanImgPara: {
+            useGlyTouCanAsImageSource : true,
+            GlyTouCanImagePara: {
                 style: "extended", // Other Options: normal, compact
                 format: "png", // Other Options: jpg
                 notation: "cfg" // Other Options: cfgbw, uoxf, uoxf-color, cfg-uoxf, iupac
             },
-            imgURL : "img/"
+            imgURL1 : "img/",
+            imgURL2 : ".png"
         },
         display : {
-            enableTitle: true,
+            enableTitle: false,
             enableNavi: true,
             naviOption: {
                 size: 0.2,
                 position: 4
-            }
+            },
+            orientation: 1 // 1, 2, 3, 4 Stand for top2bottom left2right bottom2top right2left
         },
         contextMenu : {
             enable: true,
-            default: true,
+            default: false,
             externalURL1: "https://edwardslab.bmcb.georgetown.edu/glycomotifdev/GM.",
             externalURL2: ""
         }
     };
 
+    var comp = {"mw": "Unknown", "nodes": {"G80587NA": {"type": "Whatever", "name": "G80587NA", "level": 0}, "G40192EJ_redend": {"type": "Whatever", "name": "G40192EJ_redend", "level": 0}, "G02240AO_redend": {"type": "Whatever", "name": "G02240AO_redend", "level": 0}, "G64581RP_redend": {"type": "Whatever", "name": "G64581RP_redend", "level": 0}, "G14395NH_redend": {"type": "Whatever", "name": "G14395NH_redend", "level": 0}, "G24566OP_redend": {"type": "Whatever", "name": "G24566OP_redend", "level": 0}, "fakeroot": {"hidden": true, "type": "Whatever", "name": "fakeroot", "level": 0}, "G11971MR_redend": {"type": "Whatever", "name": "G11971MR_redend", "level": 0}, "G10356UT_redend": {"type": "Whatever", "name": "G10356UT_redend", "level": 0}, "G12295TB_redend": {"type": "Whatever", "name": "G12295TB_redend", "level": 0}, "G82576YO": {"type": "Whatever", "name": "G82576YO", "level": 0}}, "root": "fakeroot", "name": "fakeroot", "edges": {"G80587NA": [{"to": "G14395NH_redend", "from": "G80587NA", "type": "contains"}, {"to": "G40192EJ_redend", "from": "G80587NA", "type": "contains"}, {"to": "G02240AO_redend", "from": "G80587NA", "type": "contains"}, {"to": "G12295TB_redend", "from": "G80587NA", "type": "contains"}, {"to": "G24566OP_redend", "from": "G80587NA", "type": "contains"}, {"to": "G11971MR_redend", "from": "G80587NA", "type": "contains"}, {"to": "G10356UT_redend", "from": "G80587NA", "type": "contains"}], "fakeroot": [{"to": "G64581RP_redend", "hidden": true, "from": "fakeroot", "type": "contains"}, {"to": "G82576YO", "hidden": true, "from": "fakeroot", "type": "contains"}], "G82576YO": [{"to": "G80587NA", "from": "G82576YO", "type": "contains"}], "G64581RP_redend": [{"to": "G80587NA", "from": "G64581RP_redend", "type": "contains"}]}};
+
     d3.json("comp.json", function(data){
-        demo_option_template.essentials.component = data["G01924ZE"];
-        glycanviewer.init(demo_option_template);
+        //demo_option_new.essentials.component = data["G01924ZE"];
+        demo_option_new.essentials.component = comp;
+        glycanviewer.init(demo_option_new);
     });
 
 
