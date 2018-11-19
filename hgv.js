@@ -316,24 +316,33 @@ var glycanviewer = {
         var greatestHeight = allHeight[0];
 
         // Constant for calculate the nodeSpace and height scale ratio
-        var nodeImageScaleRatioComparedToDefaultSetting = 1.0, // It means how many fold larger do you want your node to present
-            nodeHorizontalSpaceRatio = 0.95;
+        var nodeImageScaleRatioComparedToDefaultSetting = 1.9, // It means how many fold larger do you want your node to present
+            nodeHorizontalSpaceRatio = 1;
 
         // vertical space is the distance between 2 level, default value is 150, and we won't change that
         // horizontal space is the distance between the center of 2 image
-        var horizontalSpace,
+        var horizontalSpace = 220,
             verticalSpace = 150;
 
         var magicNumberForHeightScaleRatio = 5;
         if (greatestWidth != undefined && greatestHeight != undefined ){
             if ([2,4].includes(this.para.display.orientation)){
-                nodeHorizontalSpaceRatio = 1.5;
+                nodeHorizontalSpaceRatio = 1.9;
                 magicNumberForHeightScaleRatio = greatestWidth/nodeImageScaleRatioComparedToDefaultSetting/25;
                 horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestWidth * greatestHeight * nodeHorizontalSpaceRatio *2;
             }
             else{
                 magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
                 horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizontalSpaceRatio *2;
+            }
+            var magicNumberForHeightScaleRatio = 5;
+            if ([2,4].includes(this.para.display.orientation)){
+                verticalSpace = 400;
+                horizontalSpace = 220;
+            }
+            else{
+                verticalSpace = 220;
+                horizontalSpace = 400;
             }
         }
         else{
