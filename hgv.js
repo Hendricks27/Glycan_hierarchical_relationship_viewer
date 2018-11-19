@@ -284,7 +284,7 @@ var glycanviewer = {
             this.doubleClickEvent();
 
             if (this.para.contextMenu.enable){
-                if (this.para.contextMenu.default){
+                if (this.para.contextMenu.defaultMenu){
                     this.defaultContextMenu();
                 }
                 else{
