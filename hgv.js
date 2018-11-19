@@ -88,9 +88,9 @@ var glycanviewer = {
 
         //Locate the div && pre allocate space for each gadgets
         this.div_root = document.getElementById(thisLib.para.essentials.div_ID);
-        while (thisLib.div_root.firstChild){
-            thisLib.div_root.removeChild(thisLib.div_root.firstChild);
-        }
+        //while (thisLib.div_root.firstChild){
+        //    thisLib.div_root.removeChild(thisLib.div_root.firstChild);
+        //}
         this.div_root.style.overflow = "hidden";
 
         this.div_header = document.createElement("div");
