@@ -4,6 +4,9 @@ The JavaScript widget is used to visualize the relationship among them
 
 Update History:
 
+2018.11.20:<br>
+API changed: more versatile and reconstruct the JS structure
+
 2018.10.09:<br>
 API changed: New API makes more sense and add more options
 Separate comp.json parser from the lib
