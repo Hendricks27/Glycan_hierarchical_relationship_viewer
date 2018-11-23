@@ -82,13 +82,15 @@
     };
 
 
-    demo_option_template.essentials.component = {"mw": "Unknown", "nodes": {"G58896AZ": {"type": "Whatever", "name": "G58896AZ", "level": 0}, "G00049MO": {"type": "Whatever", "name": "G00049MO", "level": 0}, "G40585SO": {"type": "Whatever", "name": "G40585SO", "level": 0}, "FakeComposition": {"type": "Whatever", "name": "FakeComposition", "level": 0}, "G48059CD": {"type": "Whatever", "name": "G48059CD", "level": 0}, "G45827GY": {"type": "Whatever", "name": "G45827GY", "level": 0}}, "root": "FakeComposition", "name": "FakeComposition", "edges": {"FakeComposition": [{"to": "G40585SO", "from": "FakeComposition", "type": "contains"}, {"to": "G48059CD", "from": "FakeComposition", "type": "contains"}, {"to": "G45827GY", "from": "FakeComposition", "type": "contains"}], "G48059CD": [{"to": "G58896AZ", "from": "G48059CD", "type": "contains"}], "G45827GY": [{"to": "G00049MO", "from": "G45827GY", "type": "contains"}]}}
+    demo_option_template.essentials.component = {"mw": "Unknown", "nodes": {"G58896AZ": {"type": "Whatever", "name": "G58896AZ", "level": 0}, "": {"type": "Whatever", "name": "", "level": 0}, "G00049MO": {"type": "Whatever", "name": "G00049MO", "level": 0}, "G40585SO": {"type": "Whatever", "name": "G40585SO", "level": 0}, "FakeComposition": {"type": "Whatever", "name": "FakeComposition", "level": 0}, "G48059CD": {"type": "Whatever", "name": "G48059CD", "level": 0}, "G45827GY": {"type": "Whatever", "name": "G45827GY", "level": 0}}, "root": "FakeComposition", "name": "FakeComposition", "edges": {"FakeComposition": [{"to": "G40585SO", "from": "FakeComposition", "type": "contains"}, {"to": "G48059CD", "from": "FakeComposition", "type": "contains"}, {"to": "G45827GY", "from": "FakeComposition", "type": "contains"}], "G48059CD": [{"to": "G58896AZ", "from": "G48059CD", "type": "contains"}, {"to": "", "from": "G48059CD", "type": "contains"}], "G45827GY": [{"to": "G00049MO", "from": "G45827GY", "type": "contains"}]}}
     glycanviewer.init(demo_option_template);
 
-    var data, l, current = -1;
-    d3.json("substructure.json", function(d){
+    var data, keys, l, current = -1;
+    d3.json("topology.json", function(d){
         data = d;
-        l = data.length;
+        console.log(data);
+        keys = Object.keys(data);
+        l = keys.length;
     });
 
     function next(num){
@@ -97,7 +99,7 @@
             current = newindex
         }
 
-        var component = data[current];
+        var component = data[keys[current]];
         demo_option_template.essentials.component = component;
         glycanviewer.init(demo_option_template);
         refresh();
@@ -107,7 +109,7 @@
 
 
     function refresh(){
-        var component = data[current];
+        var component = data[keys[current]];
         var div = document.getElementById("forcerefresh");
         while(div.firstChild){
             div.removeChild(div.firstChild);
@@ -117,8 +119,9 @@
                 var button = document.createElement("button");
                 button.id = accession;
                 button.textContent = accession;
-                button.onclick = function(){
-                    window.open("https://glytoucan.org/glycans/" + accession + "/image?style=extended&format=png&notation=cfg")
+                button.onclick = function(self){
+                    var accession = self.id;
+                    window.open("https://glytoucan.org/glycans/" + accession + "/image?style=extended&format=png&notation=cfg");
                 };
                 div.appendChild(button);
             }
@@ -133,11 +136,13 @@
     function jumpto(){
         numx = document.getElementById("jumptoindex").value;
         numx = parseInt(numx);
+        console.log(numx);
+
 
         if (numx>=0 && numx<l){
             current = numx;
 
-            var component = data[current];
+            var component = data[keys[current]];
             demo_option_template.essentials.component = component;
             glycanviewer.init(demo_option_template);
             refresh();

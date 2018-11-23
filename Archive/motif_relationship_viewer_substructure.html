@@ -9,7 +9,7 @@
 <body>
 
 
-<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 800px; height: 600px; right: 0;"></div>
+<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 1900px; height: 800px; right: 0;"></div>
 <h5 id="no"></h5>
 
 <button onclick="next(-1)">previous</button>
@@ -86,10 +86,9 @@
     glycanviewer.init(demo_option_template);
 
     var data, keys, l, current = -1;
-    d3.json("topology.json", function(d){
+    d3.json("manualcheck.json", function(d){
         data = d;
-        console.log(data);
-        keys = Object.keys(data);
+        keys = Object.keys(d);
         l = keys.length;
     });
 
@@ -135,8 +134,6 @@
     function jumpto(){
         numx = document.getElementById("jumptoindex").value;
         numx = parseInt(numx);
-        console.log(numx);
-
 
         if (numx>=0 && numx<l){
             current = numx;

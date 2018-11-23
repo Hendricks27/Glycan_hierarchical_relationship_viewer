@@ -5,14 +5,17 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
     <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
     <script src="components.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 
-<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 800px; height: 600px; right: 0;"></div>
+<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 1152px; height: 910px; right: 0;"></div><br>
+<div id="uniqueID2" style="border-style: solid; border-color: lightgrey; width: 1152px; height: 910px; right: 0;"></div>
 
 <script>
 
+    // The template for the hierarchical glycan viewer
     var demo_option_new = {
         essentials : {
             div_ID : "uniqueID", // the ID of div container
@@ -25,7 +28,7 @@
                 format: "png", // Other Options: jpg
                 notation: "cfg" // Other Options: cfgbw, uoxf, uoxf-color, cfg-uoxf, iupac
             },
-            imgURL1 : "img/",
+            imgURL1 : "img/", // Unnecessary if useGlyTouCanAsImageSource is true
             imgURL2 : ".png"
         },
         display : {
@@ -35,7 +38,7 @@
                 size: 0.2,
                 position: 4
             },
-            orientation: 1 // 1, 2, 3, 4 Stand for top2bottom left2right bottom2top right2left
+            orientation: 2 // 1, 2, 3, 4 Stand for top2bottom left2right bottom2top right2left
         },
         contextMenu : {
             enable: true,
@@ -47,20 +50,44 @@
     console.log(Object.keys(topologyComponents));
     console.log(Object.keys(subComponents));
 
+    // Deep copy the template option, and change the parameters accordingly
+    var option1 = jQuery.extend(true, {}, demo_option_new);
+    var option2 = jQuery.extend(true, {}, demo_option_new);
+    option2.essentials.div_ID = "uniqueID2";
+    option2.display.orientation = 2;
+
+    var hgv1 = jQuery.extend(true, {}, glycanviewer);
+    var hgv2 = jQuery.extend(true, {}, glycanviewer);
+
+    var comp1, comp2;
+
     for (var key in topologyComponents){
-        if (key = "G18221CF"){
-            var comp = topologyComponents[key];
+        if (key = "G06000DZ"){
+            var comp1 = topologyComponents[key];
         }
     }
+    option1.essentials.component = comp1;
+    hgv1.init(option1);
 
     for (var key in subComponents){
+
+
         if (key = "G48059CD"){
-            var comp = subComponents[key];
+            var comp2 = subComponents[key];
+            for (var node in comp2.nodes){
+                if (node != "G48059CD"){
+                    var acc = node.split("_")[0];
+                    //comp2.nodes[node]["alternativeImageURL"] = "https://glytoucan.org/glycans/G83513YI/image?style=extended&format=png&notation=cfg";
+                    comp2.nodes[node]["alternativeImageURL"] = "https://glytoucan.org/glycans/" + acc + "/image?style=compact&format=png&notation=cfg";
+                }
+
+            }
+
         }
     }
 
-    demo_option_new.essentials.component = comp;
-    glycanviewer.init(demo_option_new);
+    option2.essentials.component = comp2;
+    hgv2.init(option2);
 
 
 

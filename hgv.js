@@ -22,14 +22,12 @@ var glycanviewer = {
     topoonly: 0,
     rootlevel: 0,
     displaynodes: 0,
-    magicNumberForHeightScaleRatio: 0,
     verticalSpace: 0,
     horizontalSpace: 0,
 
     // Image cache
     resourceStatus: {},
     nodeImg: {},
-    imageURL: {},
     imageWidth: [],
     imageHeight: [],
 
@@ -315,34 +313,18 @@ var glycanviewer = {
         var greatestWidth = allWidth[0];
         var greatestHeight = allHeight[0];
 
-        // Constant for calculate the nodeSpace and height scale ratio
-        var nodeImageScaleRatioComparedToDefaultSetting = 1.9, // It means how many fold larger do you want your node to present
-            nodeHorizontalSpaceRatio = 1;
-
-        // vertical space is the distance between 2 level, default value is 150, and we won't change that
+        // vertical space is the distance between 2 level
         // horizontal space is the distance between the center of 2 image
-        var horizontalSpace = 220,
-            verticalSpace = 150;
+        var horizontalSpace, verticalSpace;
 
-        var magicNumberForHeightScaleRatio = 5;
         if (greatestWidth != undefined && greatestHeight != undefined ){
             if ([2,4].includes(this.para.display.orientation)){
-                nodeHorizontalSpaceRatio = 1.9;
-                magicNumberForHeightScaleRatio = greatestWidth/nodeImageScaleRatioComparedToDefaultSetting/25;
-                horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestWidth * greatestHeight * nodeHorizontalSpaceRatio *2;
+                verticalSpace = greatestWidth * 1.3;
+                horizontalSpace = greatestHeight * 1.3 + 30; // Extra 35 is for the label
             }
             else{
-                magicNumberForHeightScaleRatio = greatestHeight/nodeImageScaleRatioComparedToDefaultSetting/25;
-                horizontalSpace = 25 * nodeImageScaleRatioComparedToDefaultSetting / greatestHeight * greatestWidth * nodeHorizontalSpaceRatio *2;
-            }
-            var magicNumberForHeightScaleRatio = 5;
-            if ([2,4].includes(this.para.display.orientation)){
-                verticalSpace = 400;
-                horizontalSpace = 220;
-            }
-            else{
-                verticalSpace = 220;
-                horizontalSpace = 400;
+                horizontalSpace = greatestWidth * 1.05;
+                verticalSpace = greatestHeight * 1.3 + 30; // Extra 35 is for the label
             }
         }
         else{
@@ -351,10 +333,11 @@ var glycanviewer = {
             horizontalSpace = 400;
         }
 
-        this.magicNumberForHeightScaleRatio = magicNumberForHeightScaleRatio;
+        console.log(greatestHeight, greatestWidth);
+        console.log(verticalSpace, horizontalSpace);
+
         this.verticalSpace = verticalSpace;
         this.horizontalSpace = horizontalSpace;
-
     },
 
     visOptionGenerate: function(){
@@ -462,8 +445,7 @@ var glycanviewer = {
 
             //d.brokenImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII";
 
-            d.size = d.height / thisLib.magicNumberForHeightScaleRatio;
-
+            d.size = NaN;
 
             if (displaynodes[k] != 1) {
                 //d.hidden = true;
@@ -484,7 +466,7 @@ var glycanviewer = {
                 }else{
                     e.color = {};
                 }
-                if ((e.to in displaynodes)&&(e.from in displaynodes)){
+                if ((e.to in displaynodes) && (e.from in displaynodes)){
                     edges.update(e);
                 }
             });
@@ -740,7 +722,8 @@ var glycanviewer = {
                         var pre, suf;
                         if (thisLib.para.contextMenu.externalURL1){pre = thisLib.para.contextMenu.externalURL1}else{pre = ""}
                         if (thisLib.para.contextMenu.externalURL2){suf = thisLib.para.contextMenu.externalURL2}else{suf = ""}
-                        var externalURL = pre + nodeID + suf;
+                        var acc = nodeID.split("_")[0];
+                        var externalURL = pre + acc + suf;
                         window.open(externalURL);
                     }
                 }
