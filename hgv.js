@@ -139,7 +139,6 @@ var glycanviewer = {
         }
 
         this.levelCalculation(component, rootname);
-        this.displayTitle();
         this.network = new vis.Network(thisLib.div_network);
 
 
@@ -333,8 +332,8 @@ var glycanviewer = {
             horizontalSpace = 400;
         }
 
-        console.log(greatestHeight, greatestWidth);
-        console.log(verticalSpace, horizontalSpace);
+        // console.log(greatestHeight, greatestWidth);
+        // console.log(verticalSpace, horizontalSpace);
 
         this.verticalSpace = verticalSpace;
         this.horizontalSpace = horizontalSpace;
