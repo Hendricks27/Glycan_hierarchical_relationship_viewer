@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!---- jQuery is not required dependency package ---->
     <script src="hgv.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
     <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
-    <script src="components.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 
-<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 1152px; height: 910px; right: 0;"></div><br>
-<div id="uniqueID2" style="border-style: solid; border-color: lightgrey; width: 1152px; height: 910px; right: 0;"></div>
+<div id="uniqueID" style="border-style: solid; border-color: lightgrey; width: 400px; height: 300px; right: 0;"></div>
+---------------------------------------------------------------------------------------------------------------
+<div id="uniqueID2" style="border-style: solid; border-color: lightgrey; width: 400px; height: 300px; right: 0;"></div>
 
 <script>
 
@@ -47,46 +48,27 @@
             externalURL2: ""
         }
     };
-    console.log(Object.keys(topologyComponents));
-    console.log(Object.keys(subComponents));
 
     // Deep copy the template option, and change the parameters accordingly
     var option1 = jQuery.extend(true, {}, demo_option_new);
     var option2 = jQuery.extend(true, {}, demo_option_new);
     option2.essentials.div_ID = "uniqueID2";
-    option2.display.orientation = 2;
+    option2.display.orientation = 1;
 
+    // Deep copy the viewer itself
+    // It is especially recommended when 2 or more viewer will be loaded in one HTML page
     var hgv1 = jQuery.extend(true, {}, glycanviewer);
     var hgv2 = jQuery.extend(true, {}, glycanviewer);
 
     var comp1, comp2;
 
-    for (var key in topologyComponents){
-        if (key = "G06000DZ"){
-            var comp1 = topologyComponents[key];
-        }
-    }
+    comp1 = {"mw": "Unknown", "nodes": {"G00012MO": {"type": "Whatever", "name": "G00012MO", "level": 0}, "G00072MO": {"type": "Whatever", "name": "G00072MO", "level": 0}, "Topology": {"alternativeImageURL": "https://glytoucan.org/glycans/G00012MO/image?style=compact&format=png&notation=cfg", "type": "Whatever", "name": "Topology", "level": 0}}, "root": "Topology", "name": "Topology", "edges": {"Topology": [{"to": "G00012MO", "from": "Topology", "type": "contains"}, {"to": "G00072MO", "from": "Topology", "type": "contains"}]}};
+    comp2 = {"mw": "Unknown", "nodes": {"G94956AW": {"type": "Whatever", "name": "G94956AW", "level": 0}, "G47548GA": {"type": "Whatever", "name": "G47548GA", "level": 0}, "G06873PC": {"type": "Whatever", "name": "G06873PC", "level": 0}, "fakeroot": {"hidden": true, "type": "Whatever", "name": "fakeroot", "level": 0}}, "root": "fakeroot", "name": "fakeroot", "edges": {"G47548GA": [{"to": "G94956AW", "from": "G47548GA", "type": "contains"}, {"to": "G06873PC", "from": "G47548GA", "type": "contains"}], "fakeroot": [{"to": "G47548GA", "hidden": true, "from": "fakeroot", "type": "contains"}]}};
+
     option1.essentials.component = comp1;
-    hgv1.init(option1);
-
-    for (var key in subComponents){
-
-
-        if (key = "G48059CD"){
-            var comp2 = subComponents[key];
-            for (var node in comp2.nodes){
-                if (node != "G48059CD"){
-                    var acc = node.split("_")[0];
-                    //comp2.nodes[node]["alternativeImageURL"] = "https://glytoucan.org/glycans/G83513YI/image?style=extended&format=png&notation=cfg";
-                    comp2.nodes[node]["alternativeImageURL"] = "https://glytoucan.org/glycans/" + acc + "/image?style=compact&format=png&notation=cfg";
-                }
-
-            }
-
-        }
-    }
-
     option2.essentials.component = comp2;
+
+    hgv1.init(option1);
     hgv2.init(option2);
 
 
