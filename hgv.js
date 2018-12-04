@@ -1078,7 +1078,10 @@ var glycanviewer = {
         d3.keys(component.nodes).forEach(function (k) {
             var d = component.nodes[k];
             d.id = d.name;
-            d.label = d.name;
+            if (d.label){}
+            else{
+                d.label = d.name;
+            }
             d.level -= rootlevel;
             d.shape = 'image';
             //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
