@@ -120,13 +120,6 @@ var glycanviewer = {
         var thisLib = this;
 
         this.component = this.para.essentials.component;
-        for (var node in this.component.nodes){
-            var content = this.component.nodes[node];
-            var things = content.name.split("_");
-            content.id = content.name;
-            content.label = content.name;
-            content.name = things[0];
-        }
         var topoonly = this.para.essentials.topoOnly;
 
         var component = this.component;
@@ -434,6 +427,11 @@ var glycanviewer = {
             //d.label = d.label;
             d.level -= rootlevel;
             d.shape = 'image';
+
+            if (d.label){}
+            else{
+                d.label = d.name;
+            }
 
             d.borderColor = "#FFFFFF";
             d.shapeProperties = {
@@ -1078,10 +1076,6 @@ var glycanviewer = {
         d3.keys(component.nodes).forEach(function (k) {
             var d = component.nodes[k];
             d.id = d.name;
-            if (d.label){}
-            else{
-                d.label = d.name;
-            }
             d.level -= rootlevel;
             d.shape = 'image';
             //d.image = "http://glytoucan.org/glycans/"+d.name+"/image?style=extended&format=png&notation=cfg";
