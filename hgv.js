@@ -428,6 +428,8 @@ var glycanviewer = {
             d.level -= rootlevel;
             d.shape = 'image';
 
+            d.id = d.name;
+
             if (d.label){}
             else{
                 d.label = d.name;
