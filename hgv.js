@@ -664,8 +664,7 @@ var glycanviewer = {
             var menuList = document.createElement("dl");
 
             clearEverythingInContextMenu();
-            //var x = clickData.pointer.DOM.x;
-            //var y = clickData.pointer.DOM.y;
+
             var x = clickData.layerX;
             var y = clickData.layerY;
             clickData.preventDefault();
@@ -679,29 +678,11 @@ var glycanviewer = {
             //updateList("Close Menu","dt");
             menuELE.style = "margin: 0; padding: 0; overflow: hidden; position: absolute; left: "+x+"px; top: "+y+"px; background-color: #333333; border: none; ";//width: 100px; height: 100px
 
-            updateList("Jump to:", "dt");
+            // updateList("Jump to:", "dt");
 
-            if (selectedNode !== undefined){
-                connectedNodes = connectedNodes.concat(selectedNodes);
-                selectedNodes.forEach(function(nodeID){
-                    var c0 = thisLib.network.getConnectedNodes(nodeID);
-                    connectedNodes = connectedNodes.concat(c0);
-                });
+            if (selectedNode !== undefined && selectedNode !== "Topology" && !selectedNode.startsWith("fake")){
 
-                if (connectedNodes.length > 0){
-                    connectedNodes.forEach(function(nodeID){
-                        updateList(nodeID,"dd");
-                    });
-                }
-            }
-
-            menuELE.appendChild(menuList);
-
-            function updateList(id,DOMType){
-                // dds are used to call functions
-                // dts are just descriptive words
-
-                var entry = document.createElement(DOMType);
+                var entry = document.createElement("dt");
                 entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
                 entry.onmouseover = function(d){
                     entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
@@ -709,27 +690,44 @@ var glycanviewer = {
                 entry.onmouseout = function(d){
                     entry.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
                 };
-                entry.innerHTML = id;
-                if(id == "Close Menu"){
-                    entry.onclick = function(){
-                        clearEverythingInContextMenu();
-                    }
-                }
-                else if (DOMType == "dd"){
-                    entry.onclick = function(){
-                        var nodeID = this.innerHTML;
-                        var pre, suf;
-                        if (thisLib.para.contextMenu.externalURL1){pre = thisLib.para.contextMenu.externalURL1}else{pre = ""}
-                        if (thisLib.para.contextMenu.externalURL2){suf = thisLib.para.contextMenu.externalURL2}else{suf = ""}
-                        var acc = nodeID.split("_")[0];
-                        var externalURL = pre + acc + suf;
-                        window.open(externalURL);
-                    }
-                }
+                entry.innerHTML = "Jump to GlycoMotif"; //change the description
+                entry.name = selectedNode;
+
+                entry.onclick = function(){
+                    var nodeID = this.name;
+                    var pre, suf;
+                    if (thisLib.para.contextMenu.externalURL1){pre = thisLib.para.contextMenu.externalURL1}else{pre = ""}
+                    if (thisLib.para.contextMenu.externalURL2){suf = thisLib.para.contextMenu.externalURL2}else{suf = ""}
+                    var externalURL = pre + nodeID + suf;
+                    window.open(externalURL);
+                };
                 menuList.appendChild(entry);
-                return 0;
+
+                var entry2 = document.createElement("dt");
+                entry2.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none;";
+                entry2.onmouseover = function(d){
+                    entry2.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #111111";
+                };
+                entry2.onmouseout = function(d){
+                    entry2.style = "display: block; color: white; text-align: left; padding: 5px; text-decoration: none; background-color: #333333";
+                };
+                entry2.innerHTML = "Jump to GlyTouCan"; //change the description
+                entry2.name = selectedNode;
+
+                entry2.onclick = function(){
+                    var nodeID = this.name;
+                    var pre, suf;
+                    pre = "https://glytoucan.org/Structures/Glycans/";
+                    suf = "";
+                    //var acc = nodeID.split("_")[0];
+                    var externalURL = pre + nodeID + suf;
+                    window.open(externalURL);
+                };
+                menuList.appendChild(entry2);
 
             }
+
+            menuELE.appendChild(menuList);
 
 
         }
