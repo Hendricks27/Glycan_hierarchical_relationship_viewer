@@ -437,14 +437,14 @@ var glycanviewer = {
 
             d.borderColor = "#FFFFFF";
             d.shapeProperties = {
-                useBorderWithImage: true
+                useBorderWithImage: true,
+                useImageSize: true
             };
 
             d.image = d.imageURL;
 
             //d.brokenImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII";
 
-            d.size = NaN;
 
             if (displaynodes[k] != 1) {
                 //d.hidden = true;
